@@ -1,0 +1,9 @@
+asgiref==3.8.1
+blinker==1.8.2
+greenlet==3.0.3
+grpcio==1.66.2
+grpcio-tools==1.66.2
+playwright==1.47.0
+protobuf==5.28.2
+pyee==12.0.0
+typing_extensions==4.12.2

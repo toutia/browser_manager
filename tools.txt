@@ -1,0 +1,6 @@
+#####################" how to connect to existing chrome ###############################
+
+
+~/.cache/ms-playwright/chromium-1134/chrome-linux$ ./chrome  --remote-debugging-port=9222 --user-data-dir=./user_data
+
+http://localhost:9222/json/version  => to get info 

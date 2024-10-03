@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package browser;
+
+service BrowserService {
+    rpc StartBrowser(Empty) returns (Response);
+    rpc ExecuteCommand(Command) returns (Response);
+    rpc ShutdownBrowser(Empty) returns (Response);
+}
+
+message Command {
+    string action = 1;
+    string url = 2;  // For 'goto' action
+    string selector = 3;  // For 'click' action
+}
+
+message Response {
+    string status = 1;
+    string message = 2;
+}
+
+message Empty {}
