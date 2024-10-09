@@ -4,6 +4,9 @@ from playwright.sync_api import sync_playwright
 import browser_service_pb2
 import browser_service_pb2_grpc
 import threading
+import time
+
+from command_manager import CommandManager
 """
 
 Using gRPC to manage a Playwright browser instance offers several advantages, including performance, type safety, and better handling of concurrent requests.
@@ -17,13 +20,14 @@ class BrowserManager(browser_service_pb2_grpc.BrowserServiceServicer):
         self.browser = None
         self.page = None
         self.lock = threading.Lock()
+     
 
     def StartBrowser(self, request, context):
         with self.lock:
             if self.playwright is None:
                 self.playwright = sync_playwright().start()
                 self.browser = self.playwright.chromium.connect_over_cdp('http://127.0.0.1:9222/')
-                self.page = self.browser.new_page()
+       
 
                 # Retrieve the first context of the browser.
                 default_context = self.browser.contexts[0]
@@ -38,13 +42,9 @@ class BrowserManager(browser_service_pb2_grpc.BrowserServiceServicer):
             if self.page is None:
                 return browser_service_pb2.Response(status="error", message="Browser is not started.")
             try:
-                if request.action == "goto" and request.url:
-                    self.page.goto(request.url)
-                elif request.action == "click" and request.selector:
-                    self.page.click(request.selector)
-                else:
-                    return browser_service_pb2.Response(status="error", message="Unknown command.")
-                return browser_service_pb2.Response(status="success", message="Command executed.")
+                command_executer= CommandManager(self.page)
+
+                return command_executer.execute(request.action, request.url, request.selector)
             except Exception as e:
                 return browser_service_pb2.Response(status="error", message=str(e))
 
@@ -60,6 +60,8 @@ class BrowserManager(browser_service_pb2_grpc.BrowserServiceServicer):
                 self.playwright.stop()
                 self.playwright = None
             return browser_service_pb2.Response(status="success", message="Browser shutdown.")
+
+    
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
